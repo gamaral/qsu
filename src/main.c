@@ -42,10 +42,6 @@
 #define SUCCESS  0
 #define FAILURE -1
 
-/********************************************************** global variables */
-
-extern char **environ;
-
 /******************************************************** local declarations */
 
 static void qsu_usage(void);
@@ -136,8 +132,8 @@ main(int argc, char *argv[])
 			break;
 		}
 
-		execve(*argv, argv, environ);
-		warn("execve()");
+		execvp(*argv, argv);
+		warn("execvp()");
 		break;
 
 	default:
