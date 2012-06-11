@@ -1,4 +1,20 @@
 SU implementation using Qt4 as the conversation frontend.
 
-Icons: http://www.oxygen-icons.org/
+Icons
+=====
+
+    Oxygen Icons: http://www.oxygen-icons.org/
+
+Installing
+==========
+
+In order for this application to work as intended, you will need to change
+it's owner to root and permissions to 4711.
+
+  * Run the following commands as root:
+
+        $ chown root qsu
+        $ chmod 4711 qsu
+
+You may then copy the file to your favorite bin directory.
 

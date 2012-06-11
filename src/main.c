@@ -234,8 +234,7 @@ qsu_pam_set_items(qsu_session *session)
 	l_display = getenv("DISPLAY");
 
 	if ((session->status = pam_set_item(session->handle, PAM_RUSER, l_user))       != PAM_SUCCESS ||
-	    (session->status = pam_set_item(session->handle, PAM_TTY, l_display))      != PAM_SUCCESS ||
-	    (session->status = pam_set_item(session->handle, PAM_XDISPLAY, l_display)) != PAM_SUCCESS)
+	    (session->status = pam_set_item(session->handle, PAM_TTY, l_display))      != PAM_SUCCESS)
 		return(FAILURE);
 
 	return(SUCCESS);
