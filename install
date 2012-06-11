@@ -1,0 +1,12 @@
+#!/bin/sh
+
+if [ ${EUID} -ne 0 ]; then
+	echo "This command must be executed by root."
+	exit 1
+fi
+
+[ -z "${DESTDIR}" ] && DESTDIR="/usr/local/bin"
+
+echo "Installing in '${DESTDIR}'."
+
+install -o root -m 4711 build/qsu ${DESTDIR}/qsu

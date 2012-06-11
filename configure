@@ -1,2 +1,15 @@
 #!/bin/sh
-cd build && qmake ..
+
+[ -z "${QMAKE}" ] && QMAKE=`which qmake-qt4 2> /dev/null`
+[ -z "${QMAKE}" ] && QMAKE=`which qmake 2> /dev/null`
+
+if [ -z "${QMAKE}" ]; then
+	echo "Didn't find qmake, please specify via the QMAKE environment variable."
+	exit 1
+fi
+
+echo "Using '${QMAKE}'.";
+
+cd build && ${QMAKE} ..
+make
+
