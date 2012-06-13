@@ -57,7 +57,7 @@ int
 ui_conversation(int num_msg,
                  const struct pam_message **msg,
                  struct pam_response **resp,
-                 void *)
+                 void *appdata_ptr)
 {
 	struct pam_response *l_resp(0);
 	int l_error_code(PAM_SUCCESS);
@@ -79,6 +79,11 @@ ui_conversation(int num_msg,
 	}
 
 	PasswordPromptDialog dialog;
+
+	qsu_session *session = reinterpret_cast<qsu_session *>(appdata_ptr);
+	dialog.setWindowTitle(QObject::tr("Authenticating as %1").arg(session->user));
+	if (session->description)
+		dialog.setInformationMessage(session->description);
 
 	/* process messages */
 	for (int i = 0;

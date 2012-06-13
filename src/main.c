@@ -46,7 +46,8 @@
 
 static void qsu_usage(void);
 
-static int  qsu_initialize(qsu_session *session, char *user, int argc, char *argv[]);
+static int  qsu_initialize(qsu_session *session, char *user, char *desc,
+                           int argc, char *argv[]);
 static void qsu_cleanup(qsu_session *session);
 
 static int  qsu_pam_authenticate(qsu_session *session);
@@ -62,15 +63,20 @@ main(int argc, char *argv[])
 	int   opt;
 	int   status = 1;      /* exit status */
 	char *user   = "root"; /* default user */
+	char *description = 0; /* description override */
 	
 	int   fstatus;         /* fork status */
 	pid_t fpid;            /* fork pid */
 
 	/* parse arguments */
-	while ((opt = getopt(argc, argv, "hu:")) != FAILURE)
+	while ((opt = getopt(argc, argv, "hu:d:")) != FAILURE)
 		switch (opt) {
 		case 'u':
 			user = optarg;
+			break;
+
+		case 'd':
+			description = optarg;
 			break;
 
 		default:
@@ -94,7 +100,8 @@ main(int argc, char *argv[])
 	 *
 	 */
 
-	if (qsu_initialize(&session, user, argc, argv) == FAILURE ||
+	if (qsu_initialize(&session, user, description,
+	                                   argc, argv) == FAILURE ||
 	    qsu_pam_set_items(&session)                == FAILURE ||
 	    qsu_pam_authenticate(&session)             == FAILURE) {
 		qsu_cleanup(&session);
@@ -142,7 +149,7 @@ main(int argc, char *argv[])
 		status = WEXITSTATUS(fstatus);
 	}
 
-	if (status != 0) fprintf(stderr, "Failed!");
+	if (status != 0) fprintf(stderr, "Failed!\n");
 
 	qsu_cleanup(&session);
 	return(status);
@@ -151,18 +158,20 @@ main(int argc, char *argv[])
 void
 qsu_usage(void)
 {
-	fprintf(stderr, "Usage: qsu [-u <user>] <command>\n");
+	fprintf(stderr, "Usage: qsu [-u <user>] [-d <description>] <command>\n");
 }
 
 /*****************************************************************************/
 
 int
-qsu_initialize(qsu_session *session, char *user, int argc, char *argv[])
+qsu_initialize(qsu_session *session, char *user, char *desc,
+               int argc, char *argv[])
 {
 	memset(session, 0, sizeof(*session));
 	session->user = user;
+	session->description = desc;
 	session->conv.conv = ui_conversation;
-	session->conv.appdata_ptr = (void *)&session;
+	session->conv.appdata_ptr = (void *)session;
 	session->status = 0;
 	session->cleanup = 0;
 

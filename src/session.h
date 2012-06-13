@@ -31,6 +31,7 @@ struct qsu_session_t
 	struct passwd  *pwd;
 	pam_handle_t   *handle;
 	char           *user;
+	char           *description;
 	int             status;
 	char            cleanup;
 };
