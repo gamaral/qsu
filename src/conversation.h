@@ -29,7 +29,7 @@
 extern "C" {
 #endif
 
-void ui_initialize(int argc, char *argv[]);
+void ui_initialize(void);
 void ui_finalize(void);
 
 int  ui_conversation(int num_msg,

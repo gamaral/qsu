@@ -27,6 +27,8 @@
 #include <QtGui/QApplication>
 #include <QtGui/QMessageBox>
 
+#include <X11/Xlib.h>
+
 #include <security/pam_appl.h>
 
 #include "passwordpromptdialog.h"
@@ -42,9 +44,9 @@ namespace
 extern "C" {
 
 void
-ui_initialize(int argc, char *argv[])
+ui_initialize(void)
 {
-	s_qt_app = new QApplication(argc, argv);
+	s_qt_app = new QApplication(XOpenDisplay(getenv("DISPLAY")));
 }
 
 void

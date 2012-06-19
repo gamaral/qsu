@@ -46,8 +46,7 @@
 
 static void qsu_usage(void);
 
-static int  qsu_initialize(qsu_session *session, char *user, char *desc,
-                           int argc, char *argv[]);
+static int  qsu_initialize(qsu_session *session, char *user, char *desc);
 static void qsu_cleanup(qsu_session *session);
 
 static int  qsu_pam_authenticate(qsu_session *session);
@@ -100,10 +99,9 @@ main(int argc, char *argv[])
 	 *
 	 */
 
-	if (qsu_initialize(&session, user, description,
-	                                   argc, argv) == FAILURE ||
-	    qsu_pam_set_items(&session)                == FAILURE ||
-	    qsu_pam_authenticate(&session)             == FAILURE) {
+	if (qsu_initialize(&session, user, description) == FAILURE ||
+	    qsu_pam_set_items(&session)                 == FAILURE ||
+	    qsu_pam_authenticate(&session)              == FAILURE) {
 		qsu_cleanup(&session);
 		return(1);
 	}
@@ -164,8 +162,7 @@ qsu_usage(void)
 /*****************************************************************************/
 
 int
-qsu_initialize(qsu_session *session, char *user, char *desc,
-               int argc, char *argv[])
+qsu_initialize(qsu_session *session, char *user, char *desc)
 {
 	memset(session, 0, sizeof(*session));
 	session->user = user;
@@ -179,7 +176,7 @@ qsu_initialize(qsu_session *session, char *user, char *desc,
 		return(FAILURE);
 
 	session->cleanup |= qsu_scleanup_started;
-	ui_initialize(argc, argv);
+	ui_initialize();
 
 	return(SUCCESS);
 }
