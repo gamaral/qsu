@@ -25,6 +25,7 @@
 #include "conversation.h"
 
 #include <QtGui/QApplication>
+#include <QtGui/QIcon>
 #include <QtGui/QMessageBox>
 
 #include <X11/Xlib.h>
@@ -48,6 +49,7 @@ void
 ui_initialize(void)
 {
 	s_qt_app = new QApplication(XOpenDisplay(getenv("DISPLAY")));
+	s_qt_app->setWindowIcon(QIcon(":/icons/lock.png"));
 }
 
 void

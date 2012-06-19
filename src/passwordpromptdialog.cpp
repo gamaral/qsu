@@ -56,18 +56,21 @@ PasswordPromptDialog::setErrorMessage(const QString &msg)
 {
 	m_ui->errorLabel->setText(msg);
 	m_ui->errorLabel->setVisible(true);
+	adjustSize();
 }
 
 void
 PasswordPromptDialog::setInformationMessage(const QString &msg)
 {
 	m_ui->infoLabel->setText(msg);
+	adjustSize();
 }
 
 void
 PasswordPromptDialog::setPasswordPrompt(const QString &prompt)
 {
 	m_ui->promptLabel->setText(prompt);
+	adjustSize();
 }
 
 void
