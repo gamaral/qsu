@@ -10,7 +10,7 @@ SOURCES   += src/passwordpromptdialog.cpp
 
 # BASE
 HEADERS   += src/session.h
-SOURCES   += src/main.c src/conversation.cpp
+SOURCES   += src/main.c src/strings_en.c src/conversation.cpp
 RESOURCES += resources/qsu.qrc
 
 # DEPS

@@ -38,19 +38,24 @@
 
 #include "conversation.h"
 #include "session.h"
+#include "strings.h"
 
 #define SUCCESS  0
 #define FAILURE -1
 
 /******************************************************** local declarations */
 
-static void qsu_usage(void);
+static inline void qsu_usage(void);
 
 static int  qsu_initialize(qsu_session *session, char *user, char *desc);
 static void qsu_cleanup(qsu_session *session);
 
 static int  qsu_pam_authenticate(qsu_session *session);
 static int  qsu_pam_set_items(qsu_session *session);
+
+/*********************************************************** local variables */
+
+static const char *s_command;
 
 /*************************************************************** definitions */
 
@@ -66,6 +71,8 @@ main(int argc, char *argv[])
 	
 	int   fstatus;         /* fork status */
 	pid_t fpid;            /* fork pid */
+
+	s_command = argv[0];
 
 	/* parse arguments */
 	while ((opt = getopt(argc, argv, "hu:d:")) != FAILURE)
@@ -96,7 +103,6 @@ main(int argc, char *argv[])
 	 *
 	 * UI frontend will be initiated, pam will start, we will authenticate
 	 * and a new session will be started.
-	 *
 	 */
 
 	if (qsu_initialize(&session, user, description) == FAILURE ||
@@ -111,7 +117,6 @@ main(int argc, char *argv[])
 	 * ** Perform fork **
 	 *
 	 * If we got this far it means we may proceed.
-	 *
 	 */
 
 	switch ((fpid = fork())) {
@@ -147,7 +152,10 @@ main(int argc, char *argv[])
 		status = WEXITSTATUS(fstatus);
 	}
 
-	if (status != 0) fprintf(stderr, "Failed!\n");
+	if (status != 0) {
+		fprintf(stderr, gs_error_failed, "");
+		fprintf(stderr, "\n");
+	}
 
 	qsu_cleanup(&session);
 	return(status);
@@ -156,7 +164,8 @@ main(int argc, char *argv[])
 void
 qsu_usage(void)
 {
-	fprintf(stderr, "Usage: qsu [-u <user>] [-d <description>] <command>\n");
+	fprintf(stderr, gs_usage, s_command);
+	fprintf(stderr, "\n");
 }
 
 /*****************************************************************************/
@@ -166,13 +175,23 @@ qsu_initialize(qsu_session *session, char *user, char *desc)
 {
 	memset(session, 0, sizeof(*session));
 	session->user = user;
-	session->description = desc;
 	session->conv.conv = ui_conversation;
 	session->conv.appdata_ptr = (void *)session;
 	session->status = 0;
 	session->cleanup = 0;
 
-	if ((session->status = pam_start("su", user, &session->conv, &session->handle)) != PAM_SUCCESS)
+	/* select appropriate description */
+
+	if (!desc) {
+		if (session->user && strcmp(session->user, gs_default_user) == 0)
+			session->description = gs_default_desc_default;
+		else
+			session->description = gs_default_desc_other;
+	} else session->description = desc;
+
+	/* start pam */
+
+	if ((session->status = pam_start("su", session->user, &session->conv, &session->handle)) != PAM_SUCCESS)
 		return(FAILURE);
 
 	session->cleanup |= qsu_scleanup_started;
@@ -200,19 +219,19 @@ int
 qsu_pam_authenticate(qsu_session *session)
 {
 	if ((session->status = pam_authenticate(session->handle, 0)) != PAM_SUCCESS) {
-		ui_error_message("Authentication failed,\nAccess denied.");
+		ui_error_message(gs_error_auth_failed);
 		return(FAILURE);
 	}
 
 	if ((session->status = pam_acct_mgmt(session->handle, 0)) == PAM_NEW_AUTHTOK_REQD &&
 	    (session->status = pam_chauthtok(session->handle, PAM_CHANGE_EXPIRED_AUTHTOK)) != PAM_SUCCESS) {
-		ui_error_message("Expired or invalid authentication token,\nAccess denied.");
+		ui_error_message(gs_error_auth_expired);
 		return(FAILURE);
 	}
 
 	if ((session->status = pam_setcred(session->handle, PAM_ESTABLISH_CRED)) != PAM_SUCCESS ||
 	    (session->status = pam_open_session(session->handle, 0)) != PAM_SUCCESS) {
-		ui_error_message("Post authentication failed,\nAccess denied.");
+		ui_error_message(gs_error_auth_failed);
 		return(FAILURE);
 	}
 
@@ -220,7 +239,7 @@ qsu_pam_authenticate(qsu_session *session)
 
 	if ((session->status = pam_get_item(session->handle, PAM_USER, (const void **)&session->user)) != PAM_SUCCESS ||
 	    (session->pwd = getpwnam(session->user)) == NULL) {
-		ui_error_message("Post authentication failed,\nAccess denied.");
+		ui_error_message(gs_error_auth_failed);
 		return(FAILURE);
 	}
 
@@ -235,8 +254,8 @@ qsu_pam_set_items(qsu_session *session)
 	l_user    = getlogin();
 	l_display = getenv("DISPLAY");
 
-	if ((session->status = pam_set_item(session->handle, PAM_RUSER, l_user))       != PAM_SUCCESS ||
-	    (session->status = pam_set_item(session->handle, PAM_TTY, l_display))      != PAM_SUCCESS)
+	if ((session->status = pam_set_item(session->handle, PAM_RUSER, l_user))  != PAM_SUCCESS ||
+	    (session->status = pam_set_item(session->handle, PAM_TTY, l_display)) != PAM_SUCCESS)
 		return(FAILURE);
 
 	return(SUCCESS);

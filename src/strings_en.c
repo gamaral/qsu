@@ -22,24 +22,15 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef QSU_SESSION_H
-#define QSU_SESSION_H 1
+#include "strings.h"
 
-struct qsu_session_t
-{
-	struct pam_conv conv;
-	struct passwd  *pwd;
-	pam_handle_t   *handle;
-	const char     *user;
-	const char     *description;
-	int             status;
-	char            cleanup;
-};
-typedef struct qsu_session_t qsu_session;
+const char *gs_usage                = "Usage: %s [-u <user>] [-d <description>] <command>";
+const char *gs_default_desc_default = "Please enter system administrator password to perform task.";
+const char *gs_default_desc_other   = "Please enter desired user's password to perform task.";
+const char *gs_default_title        = "Authenticating as %1";
+const char *gs_default_user         = "root";
+const char *gs_error_access_denied  = "Access Denied";
+const char *gs_error_auth_expired   = "Expired or invalid authentication token.<br /><b>Access Denied</b>";
+const char *gs_error_auth_failed    = "Authentication has failed.<br /><b>Access Denied</b>";
+const char *gs_error_failed         = "Failed!";
 
-enum {
-	qsu_scleanup_started = 1,
-	qsu_scleanup_session = 2
-};
-
-#endif

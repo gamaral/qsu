@@ -33,6 +33,7 @@
 
 #include "passwordpromptdialog.h"
 #include "session.h"
+#include "strings.h"
 
 /***************************************************************** anonymous */
 
@@ -83,7 +84,7 @@ ui_conversation(int num_msg,
 	PasswordPromptDialog dialog;
 
 	qsu_session *session = reinterpret_cast<qsu_session *>(appdata_ptr);
-	dialog.setWindowTitle(QObject::tr("Authenticating as %1").arg(session->user));
+	dialog.setWindowTitle(QString(gs_default_title).arg(session->user));
 	if (session->description)
 		dialog.setInformationMessage(session->description);
 
@@ -138,7 +139,7 @@ ui_conversation(int num_msg,
 int
 ui_error_message(const char *message)
 {
-	QMessageBox::critical(0, QObject::tr("Error"), message);
+	QMessageBox::critical(0, gs_error_access_denied, message, QMessageBox::Close);
 	return(0);
 }
 

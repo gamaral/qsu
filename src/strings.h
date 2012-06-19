@@ -22,24 +22,18 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef QSU_SESSION_H
-#define QSU_SESSION_H 1
+#ifndef QSU_STRINGS_H
+#define QSU_STRINGS_H 1
 
-struct qsu_session_t
-{
-	struct pam_conv conv;
-	struct passwd  *pwd;
-	pam_handle_t   *handle;
-	const char     *user;
-	const char     *description;
-	int             status;
-	char            cleanup;
-};
-typedef struct qsu_session_t qsu_session;
-
-enum {
-	qsu_scleanup_started = 1,
-	qsu_scleanup_session = 2
-};
+extern const char *gs_usage;
+extern const char *gs_default_desc_default;
+extern const char *gs_default_desc_other;
+extern const char *gs_default_title;
+extern const char *gs_default_user;
+extern const char *gs_error_access_denied;
+extern const char *gs_error_auth_expired;
+extern const char *gs_error_auth_failed;
+extern const char *gs_error_failed;
 
 #endif
+
