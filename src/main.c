@@ -41,7 +41,7 @@
 #include "session.h"
 #include "strings.h"
 
-#include "config.h"
+#include "global.h"
 
 /******************************************************** local declarations */
 
@@ -259,7 +259,7 @@ int
 main_database_authenticate(qsu_session *session)
 {
 	if (qsu_database_initialize(session) == FAILURE) {
-		fprintf(stderr, gs_error_database_init, QSU_DATABASE_ROOT);
+		fprintf(stderr, gs_error_database_init, QSU_DATABASE_PATH);
 		fprintf(stderr, "\n");
 		return(FAILURE);
 	}

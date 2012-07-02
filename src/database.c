@@ -39,7 +39,7 @@
 #include "string.h"
 #include "strings.h"
 
-#include "config.h"
+#include "global.h"
 
 #define QSU_DB_MAGIC 4106420479 // great movie
 
@@ -61,7 +61,7 @@ qsu_database_initialize(qsu_session *session)
 	s_db_path[0] = '\0';
 	s_db_file = 0;
 
-	strcpy(s_db_path, QSU_DATABASE_ROOT);
+	strcpy(s_db_path, QSU_DATABASE_PATH);
 	if (prepare_database_directory(s_db_path) == FAILURE)
 		return(FAILURE);
 
@@ -87,6 +87,8 @@ qsu_database_initialize(qsu_session *session)
 void
 qsu_database_finalize(qsu_session *session)
 {
+	QSU_UNUSED(session);
+
 	if (s_db_file)
 		close(s_db_file);
 
@@ -101,8 +103,7 @@ qsu_database_authenticate(qsu_session *session)
 	time_t l_auth;
 	int    l_delta;
 
-	/* UNUSED (for now) */
-	(void) session;
+	QSU_UNUSED(session);
 
 	/* move cursor to beginning */
 	if (lseek(s_db_file, 0, SEEK_SET) == -1) {
@@ -140,8 +141,7 @@ qsu_database_reset(qsu_session *session)
 	const unsigned int l_magic = QSU_DB_MAGIC;
 	const time_t l_auth = time(0);
 
-	/* UNUSED (for now) */
-	(void) session;
+	QSU_UNUSED(session);
 
 	/* move cursor to beginning */
 	if (lseek(s_db_file, 0, SEEK_SET) == -1) {
@@ -185,15 +185,15 @@ prepare_database_directory(const char *path)
 		}
 	}
 
-	/* Found, now make sure it's a directory */
+	/* found, now make sure it's a directory */
 	else if ((l_sb.st_mode & S_IFMT) != S_IFDIR)
 		return(FAILURE);
 
-	/* Check for valid directory permissions */
+	/* check for valid directory permissions */
 	else if ((l_sb.st_mode & 0777) != S_IRWXU) {
-		fprintf(stderr, gs_error_database_perms, path);
-		fprintf(stderr, "\n");
-		return(FAILURE);
+		/* wrong permissions, try to correct */
+		if (chmod(path, S_IRWXU) == -1)
+			return(FAILURE);
 	}
 
 	return(SUCCESS);
@@ -221,15 +221,15 @@ prepare_database_file(const char *path)
 		close(s_db_file);
 	}
 
-	/* Found, now make sure it's a regular file */
+	/* found, now make sure it's a regular file */
 	else if ((l_sb.st_mode & S_IFMT) != S_IFREG)
 		return(FAILURE);
 
-	/* Check for valid permissions */
+	/* check for valid permissions */
 	else if ((l_sb.st_mode & 0777) != (S_IRUSR|S_IWUSR)) {
-		fprintf(stderr, gs_error_database_perms, path);
-		fprintf(stderr, "\n");
-		return(FAILURE);
+		/* wrong permissions, try to correct */
+		if (chmod(path, S_IRUSR|S_IWUSR) == -1)
+			return(FAILURE);
 	}
 
 	/* open file */

@@ -25,29 +25,8 @@
 #ifndef QSU_CONFIG_H
 #define QSU_CONFIG_H 1
 
-#define QSU_AUTH_TIMEOUT 180 /* 3 minutes */
-
-#ifndef QSU_DESTDIR
-#  ifdef DESTDIR
-#    define QSU_DESTDIR DESTDIR
-#  else
-#    define QSU_DESTDIR
-#  endif
-#endif
-
-#ifndef QSU_PREFIX
-#  ifdef PREFIX
-#    define QSU_PREFIX QSU_DESTDIR PREFIX
-#  else
-#    define QSU_PREFIX /usr/local
-#  endif
-#endif
-
-#define m1str(m) #m
-#define m2str(m) m1str(m)
-#define QSU_DATABASE_ROOT m2str(QSU_DESTDIR) m2str(QSU_PREFIX) "/var/db/qsu"
-
-#define SUCCESS  0
-#define FAILURE -1
+#define QSU_AUTH_TIMEOUT @QSU_AUTH_TIMEOUT@
+#define QSU_PREFIX "@CMAKE_INSTALL_PREFIX@"
+#define QSU_DATABASE_PATH QSU_PREFIX"@QSU_DATABASE_PATH@"
 
 #endif

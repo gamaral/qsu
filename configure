@@ -1,36 +1,6 @@
 #!/bin/sh
 
-[ -z "${QMAKE}" ] && QMAKE=`which qmake-qt4 2> /dev/null`
-[ -z "${QMAKE}" ] && QMAKE=`which qmake 2> /dev/null`
-
-if [ -z "${QMAKE}" ]; then
-	echo "Didn't find qmake, please specify via the QMAKE environment variable."
-	exit 1
-fi
-
-# Clang spec
-[ ! -z "${CLANG}" ] && QMAKE="${QMAKE} -spec unsupported/linux-clang"
-
-# Debug support
-if [ ! -z "${DEBUG}" ]; then
-	QMAKE="${QMAKE} CONFIG+=debug"
-else
-	QMAKE="${QMAKE} CONFIG-=debug"
-fi
-
-# Use DESTDIR and PREFIX if no QSU_* alternatives where found
-[ ! -z "${DESTDIR}" ] && [ -z "${QSU_DESTDIR}" ] && QSU_DESTDIR="${DESTDIR}"
-[ ! -z "${PREFIX}" ]  && [ -z "${QSU_PREFIX}"]   && QSU_PREFIX="${PREFIX}"
-
-# Defaults
-[ -z "${QSU_DESTDIR}" ] && QSU_DESTDIR=""
-[ -z "${QSU_PREFIX}" ]  && QSU_PREFIX="/usr/local"
-
-echo "Using '${QMAKE}'.";
-
-rm -rf build/*
-
-cd build && ${QMAKE} QSU_DESTDIR="${QSU_DESTDIR}" QSU_PREFIX="${QSU_PREFIX}" ..
-
+cd build
+cmake ..
 make
 

@@ -35,7 +35,6 @@ extern const char *gs_error_access_denied;
 extern const char *gs_error_auth_expired;
 extern const char *gs_error_auth_failed;
 extern const char *gs_error_database_init;
-extern const char *gs_error_database_perms;
 extern const char *gs_error_failed;
 extern const char *gs_error_no_display;
 
