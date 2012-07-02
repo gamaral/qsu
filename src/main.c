@@ -37,21 +37,24 @@
 #include <unistd.h>
 
 #include "conversation.h"
+#include "database.h"
 #include "session.h"
 #include "strings.h"
 
-#define SUCCESS  0
-#define FAILURE -1
+#include "config.h"
 
 /******************************************************** local declarations */
 
-static inline void qsu_usage(void);
+static void main_usage(void);
 
-static int  qsu_initialize(qsu_session *session, char *user, char *desc);
-static void qsu_cleanup(qsu_session *session);
+static int  main_initialize(qsu_session *session, char *user, char *desc);
+static void main_cleanup(qsu_session *session);
 
-static int  qsu_pam_authenticate(qsu_session *session);
-static int  qsu_pam_set_items(qsu_session *session);
+static int  main_database_authenticate(qsu_session *session);
+
+static int  main_pam_initialize(qsu_session *session);
+static int  main_pam_authenticate(qsu_session *session);
+static int  main_pam_set_items(qsu_session *session);
 
 /*********************************************************** local variables */
 
@@ -74,6 +77,14 @@ main(int argc, char *argv[])
 
 	s_command = argv[0];
 
+	/* check for X11 display */
+	if (!getenv("DISPLAY")) {
+		fprintf(stderr, gs_error_no_display, "");
+		fprintf(stderr, "\n");
+		main_usage();
+		return(1);
+	}
+
 	/* parse arguments */
 	while ((opt = getopt(argc, argv, "hu:d:")) != FAILURE)
 		switch (opt) {
@@ -86,7 +97,7 @@ main(int argc, char *argv[])
 			break;
 
 		default:
-			qsu_usage();
+			main_usage();
 			return(1);
 		}
 	argc -= optind;
@@ -94,8 +105,24 @@ main(int argc, char *argv[])
 
 	/* check for command */
 	if (argc <= 0) {
-		qsu_usage();
+		main_usage();
 		return(1);
+	}
+
+	/*
+	 * ** Initialization **
+	 *
+	 * Initialize local session check for previous authenticated session.
+	 */
+
+	if (main_initialize(&session, user, description) == FAILURE) {
+		main_cleanup(&session);
+		return(1);
+	}
+
+	if (main_database_authenticate(&session) == SUCCESS) {
+		fprintf(stderr, gs_database_authenticated, "");
+		fprintf(stderr, "\n");
 	}
 
 	/*
@@ -105,13 +132,23 @@ main(int argc, char *argv[])
 	 * and a new session will be started.
 	 */
 
-	if (qsu_initialize(&session, user, description) == FAILURE ||
-	    qsu_pam_set_items(&session)                 == FAILURE ||
-	    qsu_pam_authenticate(&session)              == FAILURE) {
-		qsu_cleanup(&session);
+	else if (main_pam_initialize(&session)   == FAILURE ||
+	         main_pam_set_items(&session)    == FAILURE ||
+	         main_pam_authenticate(&session) == FAILURE) {
+		main_cleanup(&session);
 		return(1);
 	}
 
+	/* get target user account information */
+	if ((session.pwd = getpwnam(session.user)) == NULL) {
+		perror("getpwnam");
+		return(1);
+	}
+
+	/* reset stored session if authenticated via pam */
+	if ((session.cleanup & (qsu_scleanup_db_started|qsu_scleanup_pam_session)) ==
+	    (qsu_scleanup_db_started|qsu_scleanup_pam_session))
+		qsu_database_reset(&session);
 
 	/*
 	 * ** Perform fork **
@@ -157,12 +194,12 @@ main(int argc, char *argv[])
 		fprintf(stderr, "\n");
 	}
 
-	qsu_cleanup(&session);
+	main_cleanup(&session);
 	return(status);
 }
 
 void
-qsu_usage(void)
+main_usage(void)
 {
 	fprintf(stderr, gs_usage, s_command);
 	fprintf(stderr, "\n");
@@ -171,12 +208,18 @@ qsu_usage(void)
 /*****************************************************************************/
 
 int
-qsu_initialize(qsu_session *session, char *user, char *desc)
+main_initialize(qsu_session *session, char *user, char *desc)
 {
+	struct passwd *l_pw;
+	
+	/* get actual username */
+	if ((l_pw = getpwuid(getuid())) == NULL)
+	    return(FAILURE);
+
 	memset(session, 0, sizeof(*session));
+	session->euser = l_pw->pw_name;
 	session->user = user;
-	session->conv.conv = ui_conversation;
-	session->conv.appdata_ptr = (void *)session;
+	session->conv = 0;
 	session->status = 0;
 	session->cleanup = 0;
 
@@ -189,26 +232,23 @@ qsu_initialize(qsu_session *session, char *user, char *desc)
 			session->description = gs_default_desc_other;
 	} else session->description = desc;
 
-	/* start pam */
-
-	if ((session->status = pam_start("su", session->user, &session->conv, &session->handle)) != PAM_SUCCESS)
-		return(FAILURE);
-
-	session->cleanup |= qsu_scleanup_started;
-	ui_initialize();
-
 	return(SUCCESS);
 }
 
 void
-qsu_cleanup(qsu_session *session)
+main_cleanup(qsu_session *session)
 {
-	if (session->cleanup & qsu_scleanup_session)
+	if (session->cleanup & qsu_scleanup_pam_session)
 		session->status = pam_close_session(session->handle, 0);
 
-	if (session->cleanup & qsu_scleanup_started)
+	if (session->cleanup & qsu_scleanup_pam_started)
 		pam_end(session->handle, session->status);
-	
+
+	free(session->conv), session->conv = 0;
+
+	if (session->cleanup & qsu_scleanup_db_started)
+		qsu_database_finalize(session);
+
 	session->handle = 0;
 	session->cleanup = 0;
 
@@ -216,7 +256,44 @@ qsu_cleanup(qsu_session *session)
 }
 
 int
-qsu_pam_authenticate(qsu_session *session)
+main_database_authenticate(qsu_session *session)
+{
+	if (qsu_database_initialize(session) == FAILURE) {
+		fprintf(stderr, gs_error_database_init, QSU_DATABASE_ROOT);
+		fprintf(stderr, "\n");
+		return(FAILURE);
+	}
+
+	session->cleanup |= qsu_scleanup_db_started;
+
+	/* authenticate if possible */
+	if (qsu_database_authenticate(session) == FAILURE)
+		return(FAILURE);
+
+	return(SUCCESS);
+}
+
+int
+main_pam_initialize(qsu_session *session)
+{
+	session->conv = malloc(sizeof(*session->conv));
+	session->conv->conv = ui_conversation;
+	session->conv->appdata_ptr = (void *)session;
+
+	/* start pam */
+
+	if ((session->status = pam_start("su", session->user, session->conv, &session->handle)) != PAM_SUCCESS)
+		return(FAILURE);
+
+	session->cleanup |= qsu_scleanup_pam_started;
+
+	ui_initialize();
+
+	return(SUCCESS);
+}
+
+int
+main_pam_authenticate(qsu_session *session)
 {
 	if ((session->status = pam_authenticate(session->handle, 0)) != PAM_SUCCESS) {
 		ui_error_message(gs_error_auth_failed);
@@ -235,7 +312,7 @@ qsu_pam_authenticate(qsu_session *session)
 		return(FAILURE);
 	}
 
-	session->cleanup |= qsu_scleanup_session;
+	session->cleanup |= qsu_scleanup_pam_session;
 
 	if ((session->status = pam_get_item(session->handle, PAM_USER, (const void **)&session->user)) != PAM_SUCCESS ||
 	    (session->pwd = getpwnam(session->user)) == NULL) {
@@ -247,7 +324,7 @@ qsu_pam_authenticate(qsu_session *session)
 }
 
 int
-qsu_pam_set_items(qsu_session *session)
+main_pam_set_items(qsu_session *session)
 {
 	const char *l_user, *l_display;
 

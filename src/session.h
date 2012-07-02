@@ -25,21 +25,27 @@
 #ifndef QSU_SESSION_H
 #define QSU_SESSION_H 1
 
+struct pam_conv;
+struct pam_handle;
+struct passwd;
+
 struct qsu_session_t
 {
-	struct pam_conv conv;
-	struct passwd  *pwd;
-	pam_handle_t   *handle;
-	const char     *user;
-	const char     *description;
-	int             status;
-	char            cleanup;
+	struct pam_conv   *conv;
+	struct passwd     *pwd;
+	struct pam_handle *handle;
+	const char        *euser;
+	const char        *user;
+	const char        *description;
+	int                status;
+	char               cleanup;
 };
 typedef struct qsu_session_t qsu_session;
 
 enum {
-	qsu_scleanup_started = 1,
-	qsu_scleanup_session = 2
+	qsu_scleanup_db_started  = 1,
+	qsu_scleanup_pam_started = 2,
+	qsu_scleanup_pam_session = 4,
 };
 
 #endif

@@ -24,13 +24,31 @@
 
 #include "strings.h"
 
-const char *gs_usage                = "Usage: %s [-u <user>] [-d <description>] <command>";
-const char *gs_default_desc_default = "Please enter system administrator password to perform task.";
-const char *gs_default_desc_other   = "Please enter desired user's password to perform task.";
-const char *gs_default_title        = "Authenticating as %1";
-const char *gs_default_user         = "root";
-const char *gs_error_access_denied  = "Access Denied";
-const char *gs_error_auth_expired   = "Expired or invalid authentication token.<br /><b>Access Denied</b>";
-const char *gs_error_auth_failed    = "Authentication has failed.<br /><b>Access Denied</b>";
-const char *gs_error_failed         = "Failed!";
+const char *gs_usage =
+    "Usage: %s [-u <user>] [-d <description>] <command>";
+const char *gs_database_authenticated =
+    "Previously authenticated!";
+const char *gs_default_desc_default =
+    "Please enter system administrator password to perform task.";
+const char *gs_default_desc_other =
+    "Please enter desired user's password to perform task.";
+const char *gs_default_title =
+    "Authenticating as %1";
+const char *gs_default_user =
+    "root";
+const char *gs_error_access_denied =
+    "Access Denied";
+const char *gs_error_auth_expired =
+    "Expired or invalid authentication token.<br /><b>Access Denied</b>";
+const char *gs_error_auth_failed =
+    "Authentication has failed.<br /><b>Access Denied</b>";
+const char *gs_error_database_init =
+    "Failed to initialize session database!\n"
+    "Please check that the following exists and is a directory owned by root: %s";
+const char *gs_error_database_perms =
+    "Encountered invalid permissions for '%s'.";
+const char *gs_error_failed =
+    "Failed!";
+const char *gs_error_no_display =
+    "No X11 display was found.";
 

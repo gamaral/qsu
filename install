@@ -5,8 +5,19 @@ if [ `id -u` -ne 0 ]; then
 	exit 1
 fi
 
-[ -z "${DESTDIR}" ] && DESTDIR="/usr/local/bin"
+# Use DESTDIR and PREFIX if no QSU_* alternatives where found
+[ ! -z "${DESTDIR}" ] && [ -z "${QSU_DESTDIR}" ] && QSU_DESTDIR="${DESTDIR}"
+[ ! -z "${PREFIX}" ]  && [ -z "${QSU_PREFIX}"]   && QSU_PREFIX="${PREFIX}"
 
-echo "Installing in '${DESTDIR}'."
+# Defaults
+[ -z "${QSU_DESTDIR}" ] && QSU_DESTDIR=""
+[ -z "${QSU_PREFIX}" ]  && QSU_PREFIX="/usr/local"
 
-install -o root -m 4711 build/qsu ${DESTDIR}/qsu
+echo "Installing in '${QSU_DESTDIR}${QSU_PREFIX}'."
+
+mkdir -p ${QSU_DESTDIR}${QSU_PREFIX}
+
+install -o root -m 4711 build/qsu ${QSU_DESTDIR}${QSU_PREFIX}/bin/qsu
+
+mkdir -p ${QSU_DESTDIR}${QSU_PREFIX}/var/db/qsu
+chmod 700 ${QSU_DESTDIR}${QSU_PREFIX}/var/db/qsu

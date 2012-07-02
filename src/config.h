@@ -22,22 +22,32 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef QSU_STRINGS_H
-#define QSU_STRINGS_H 1
+#ifndef QSU_CONFIG_H
+#define QSU_CONFIG_H 1
 
-extern const char *gs_usage;
-extern const char *gs_database_authenticated;
-extern const char *gs_default_desc_default;
-extern const char *gs_default_desc_other;
-extern const char *gs_default_title;
-extern const char *gs_default_user;
-extern const char *gs_error_access_denied;
-extern const char *gs_error_auth_expired;
-extern const char *gs_error_auth_failed;
-extern const char *gs_error_database_init;
-extern const char *gs_error_database_perms;
-extern const char *gs_error_failed;
-extern const char *gs_error_no_display;
+#define QSU_AUTH_TIMEOUT 180 /* 3 minutes */
 
+#ifndef QSU_DESTDIR
+#  ifdef DESTDIR
+#    define QSU_DESTDIR DESTDIR
+#  else
+#    define QSU_DESTDIR
+#  endif
 #endif
 
+#ifndef QSU_PREFIX
+#  ifdef PREFIX
+#    define QSU_PREFIX QSU_DESTDIR PREFIX
+#  else
+#    define QSU_PREFIX /usr/local
+#  endif
+#endif
+
+#define m1str(m) #m
+#define m2str(m) m1str(m)
+#define QSU_DATABASE_ROOT m2str(QSU_DESTDIR) m2str(QSU_PREFIX) "/var/db/qsu"
+
+#define SUCCESS  0
+#define FAILURE -1
+
+#endif

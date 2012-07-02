@@ -22,22 +22,14 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef QSU_STRINGS_H
-#define QSU_STRINGS_H 1
+#ifndef QSU_DATABASE_H
+#define QSU_DATABASE_H 1
 
-extern const char *gs_usage;
-extern const char *gs_database_authenticated;
-extern const char *gs_default_desc_default;
-extern const char *gs_default_desc_other;
-extern const char *gs_default_title;
-extern const char *gs_default_user;
-extern const char *gs_error_access_denied;
-extern const char *gs_error_auth_expired;
-extern const char *gs_error_auth_failed;
-extern const char *gs_error_database_init;
-extern const char *gs_error_database_perms;
-extern const char *gs_error_failed;
-extern const char *gs_error_no_display;
+struct qsu_session_t;
+
+int  qsu_database_initialize(struct qsu_session_t *session);
+void qsu_database_finalize(struct qsu_session_t *session);
+int  qsu_database_authenticate(struct qsu_session_t *session);
+int  qsu_database_reset(struct qsu_session_t *session);
 
 #endif
-
