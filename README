@@ -5,16 +5,17 @@ Icons
 
     Oxygen Icons: http://www.oxygen-icons.org/
 
+Configuring
+===========
+
+    "./configure" will bootstrap the build directory for you, or you can do it
+    manually if you like living on the edge.
+
+    A few settings are availble in CMake (QSU_*), you can change them around
+    by running: make edit_cache
+
 Installing
 ==========
 
-In order for this application to work as intended, you will need to change
-it's owner to root and permissions to 4711.
-
-  * Run the following commands as root:
-
-        $ chown root qsu
-        $ chmod 4711 qsu
-
-You may then copy the file to your favorite bin directory.
+    make install (as root)
 
