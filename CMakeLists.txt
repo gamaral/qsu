@@ -8,8 +8,9 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 add_definitions( -W -Wall )
 
 # dependencies
-find_package(Qt4 COMPONENTS QtCore QtGui)
 find_library(PAM_LIBRARY pam)
+find_package(X11)
+find_package(Qt4 COMPONENTS QtCore QtGui)
 include(${QT_USE_FILE})
 
 # configuration
@@ -19,6 +20,7 @@ configure_file(${PROJECT_SOURCE_DIR}/src/config.h.in ${PROJECT_BINARY_DIR}/src/c
 
 # sources
 include_directories(${PROJECT_BINARY_DIR}/src/)
+include_directories(${X11_X11_INCLUDE_PATH})
 file(GLOB QSU_HDRS "src/*.h")
 file(GLOB QSU_SRCS "src/*.c" "src/*.cpp")
 
@@ -29,7 +31,7 @@ QT4_WRAP_UI(QSU_UI_HDRS "src/passwordpromptdialog.ui")
 
 # target
 add_executable(qsu ${QSU_SRCS} ${QSU_HDRS} ${QSU_RC_SRCS} ${QSU_MOC_SRCS} ${QSU_UI_HDRS})
-target_link_libraries(qsu ${QT_LIBRARIES} ${PAM_LIBRARY})
+target_link_libraries(qsu ${PAM_LIBRARY} ${X11_X11_LIB} ${QT_LIBRARIES})
 
 # install
 install(PROGRAMS "${CMAKE_CURRENT_BINARY_DIR}/qsu"
