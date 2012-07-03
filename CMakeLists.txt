@@ -16,10 +16,10 @@ include(${QT_USE_FILE})
 # configuration
 set(QSU_AUTH_TIMEOUT "180" CACHE STRING "Session timeout in seconds (default: 3M)")
 set(QSU_DATABASE_PATH "/var/db/qsu" CACHE STRING "Session timestamp location (prefix prepended)")
-configure_file(${PROJECT_SOURCE_DIR}/src/config.h.in ${PROJECT_BINARY_DIR}/src/config.h)
+configure_file(${PROJECT_SOURCE_DIR}/config.h.in ${PROJECT_BINARY_DIR}/config.h)
 
 # sources
-include_directories(${PROJECT_BINARY_DIR}/src/)
+include_directories(${PROJECT_BINARY_DIR})
 include_directories(${X11_X11_INCLUDE_PATH})
 file(GLOB QSU_HDRS "src/*.h")
 file(GLOB QSU_SRCS "src/*.c" "src/*.cpp")
