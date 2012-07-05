@@ -29,3 +29,7 @@ prep.path    = $$PREFIX/var/db/qsu
 prep.files   = $$PWD/build/.keep
 INSTALLS    += prep
 
+# DEFAULT CONFIG
+!exists( config.h ) {
+	system(cp $$PWD/config.h.def $$OUT_PWD/config.h)
+}
