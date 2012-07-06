@@ -67,15 +67,26 @@ PasswordPromptDialog::setInformationMessage(const QString &msg)
 }
 
 void
+PasswordPromptDialog::setPasswordEcho(bool echo)
+{
+	m_ui->passwordLineEdit->setEchoMode(echo ? QLineEdit::PasswordEchoOnEdit : QLineEdit::Password);
+}
+
+void
 PasswordPromptDialog::setPasswordPrompt(const QString &prompt)
 {
 	m_ui->promptLabel->setText(prompt);
 	adjustSize();
 }
+void
+PasswordPromptDialog::setUserCaption(const QString &caption)
+{
+	m_ui->userLabel->setText(caption);
+}
 
 void
-PasswordPromptDialog::setPasswordEcho(bool echo)
+PasswordPromptDialog::setUserName(const QString &name)
 {
-	m_ui->passwordLineEdit->setEchoMode(echo ? QLineEdit::PasswordEchoOnEdit : QLineEdit::Password);
+	m_ui->userLineEdit->setText(name);
 }
 

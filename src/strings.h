@@ -31,6 +31,7 @@ extern const char *gs_default_desc_default;
 extern const char *gs_default_desc_other;
 extern const char *gs_default_title;
 extern const char *gs_default_user;
+extern const char *gs_default_user_caption;
 extern const char *gs_error_access_denied;
 extern const char *gs_error_auth_expired;
 extern const char *gs_error_auth_failed;

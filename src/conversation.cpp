@@ -89,6 +89,8 @@ ui_conversation(int num_msg,
 	dialog.setWindowTitle(QString(gs_default_title).arg(session->user));
 	if (session->description)
 		dialog.setInformationMessage(session->description);
+	dialog.setUserCaption(gs_default_user_caption);
+	dialog.setUserName(session->user);
 
 	/* process messages */
 	for (int i = 0;

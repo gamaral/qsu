@@ -44,6 +44,8 @@ public:
 	void setInformationMessage(const QString &msg);
 	void setPasswordEcho(bool echo);
 	void setPasswordPrompt(const QString &prompt);
+	void setUserCaption(const QString &caption);
+	void setUserName(const QString &name);
 
 protected:
 	void setupUi(void);
